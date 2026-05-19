@@ -1,6 +1,6 @@
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 import * as s from "./simplevalidation.ts";
 import { io } from "./simplevalidation.ts";
-import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { PostgresTypeBuilder } from "./types.ts";
 
 // Common numeric type accepts string, number or bigint
@@ -79,3 +79,80 @@ export const PGUNIFIED_TYPE_MAPPING = {
   input: StandardSchemaV1;
   output: StandardSchemaV1;
 }>;
+
+type Numeric = string | number | bigint;
+type InputOutput<I, O = I> = {
+  input: I;
+  output: O;
+};
+
+export type PgUnifiedTypeMapping = {
+  // Numeric types
+  int2: InputOutput<Numeric, number>;
+  int4: InputOutput<Numeric, number>;
+  int8: InputOutput<Numeric, bigint>;
+  serial2: InputOutput<Numeric, number>;
+  serial4: InputOutput<Numeric, number>;
+  serial8: InputOutput<Numeric, bigint>;
+  float4: InputOutput<Numeric, number>;
+  float8: InputOutput<Numeric, number>;
+  decimal: InputOutput<Numeric, string>;
+  money: InputOutput<string>;
+
+  // Character types
+  text: InputOutput<string>;
+  varchar: InputOutput<string>;
+  char: InputOutput<string>;
+
+  // Binary types
+  bytea: InputOutput<Uint8Array>;
+
+  // Date/Time types
+  timestamp: InputOutput<string>;
+  timestamptz: InputOutput<Date>;
+  date: InputOutput<string>;
+  time: InputOutput<string>;
+  timetz: InputOutput<string>;
+  interval: InputOutput<string>;
+
+  // Boolean type
+  boolean: InputOutput<boolean>;
+
+  // UUID type
+  uuid: InputOutput<string>;
+
+  // JSON types
+  jsonb: InputOutput<object>;
+  json: InputOutput<object>;
+
+  // Network address types
+  inet: InputOutput<string>;
+  cidr: InputOutput<string>;
+  macaddr: InputOutput<string>;
+  macaddr8: InputOutput<string>;
+
+  // Bit string types
+  bit: InputOutput<string>;
+  varbit: InputOutput<string>;
+
+  // Text search types
+  tsvector: InputOutput<string>;
+  tsquery: InputOutput<string>;
+
+  // XML type
+  xml: InputOutput<string>;
+
+  // Geometric types
+  point: InputOutput<string>;
+  line: InputOutput<string>;
+  lseg: InputOutput<string>;
+  box: InputOutput<string>;
+  path: InputOutput<string>;
+  polygon: InputOutput<string>;
+  circle: InputOutput<string>;
+
+  // Object identifier / system types
+  xmin: InputOutput<number>;
+  pg_lsn: InputOutput<string>;
+  pg_snapshot: InputOutput<string>;
+};

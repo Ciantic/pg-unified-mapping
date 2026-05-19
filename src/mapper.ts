@@ -76,6 +76,19 @@ export function createPgMapperTypes(pg: {
   };
 }
 
+/**
+ * PGLite mapping
+ *
+ * Example:
+ *
+ * ```
+ * import { PGlite } from "@electric-sql/pglite";
+ *
+ * new PGlite({
+ *   parsers: createPgliteParsers(),
+ * })
+ * ```
+ */
 export function createPgliteParsers() {
   return {
     // int8/serial8: return bigint instead of string
@@ -87,6 +100,19 @@ export function createPgliteParsers() {
   };
 }
 
+/**
+ * Porsager/postgres mapping
+ *
+ * Example:
+ * ```
+ * import postgres from "postgres";
+ *
+ * postgres({
+ *   ...options,
+ *   types: createPorasgerTypes(),
+ * });
+ * ```
+ */
 export function createPorasgerTypes() {
   return {
     bigint: {

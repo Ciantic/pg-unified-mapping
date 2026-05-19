@@ -1,4 +1,15 @@
-import { type PostgresType } from "pg-unified-mapping";
+import {
+  type PgUnifiedTypeMapping,
+  type PostgresType,
+} from "pg-unified-mapping";
+
+type TestEntry = {
+  [K in keyof PgUnifiedTypeMapping]: {
+    type: K;
+    input: PgUnifiedTypeMapping[K]["input"];
+    output?: PgUnifiedTypeMapping[K]["output"];
+  };
+}[keyof PgUnifiedTypeMapping];
 
 // prettier-ignore
 export const TABLE = {
@@ -116,4 +127,4 @@ export const TABLE = {
   test_decimal_arr: { type: "decimal(10,2)[]", input: ["10.50", "20.75"] },
   test_point_arr: { type: "point[]", input: ["(1,2)", "(3,4)"] },
   test_circle_arr: { type: "circle[]", input: ["<(1,2),3>", "<(4,5),6>"] },
-} satisfies Record<string, { type: PostgresType; input: any; output?: any }>;
+} satisfies Record<string, { type: PostgresType; input: any; output?: any } | TestEntry>;
