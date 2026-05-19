@@ -1,0 +1,29 @@
+{
+  "name": "pg-unified-mapping",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "test": "vitest --run",
+    "check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@11.1.3",
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.4.5",
+    "@standard-schema/spec": "^1.1.0",
+    "@types/node": "^25.9.0",
+    "@types/pg": "^8.20.0",
+    "kysely": "^0.29.2",
+    "pg": "^8.21.0",
+    "postgrejs": "^2.23.0",
+    "postgres": "^3.4.9",
+    "prettier": "^3.8.3",
+    "vitest": "^4.1.6"
+  }
+}

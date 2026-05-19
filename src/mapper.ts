@@ -1,0 +1,112 @@
+/**
+ * Takes in a `pg` module, returns options for PG client
+ *
+ * Example:
+ * ```
+ * import pg from "pg";
+ *
+ * const client = await new pg.Client({ host: "localhost", types: createPgMapperTypes(pg), });
+ */
+export function createPgMapperTypes(pg: {
+  types: {
+    getTypeParser: (
+      oid: number,
+      format?: "binary" | "text",
+    ) => (val: string) => any;
+    arrayParser:
+      | any
+      | {
+          create: (
+            source: any,
+            transform?: any,
+          ) => {
+            parse: () => any[];
+          };
+        };
+  };
+}) {
+  return {
+    getTypeParser: (oid: number, format?: "binary" | "text") => {
+      // int8/serial8: return bigint instead of number | bigint
+      if (oid === 20) return (val: string) => BigInt(val);
+      // int8[]: parse as bigint array
+      if (oid === 1016)
+        return (val: string) =>
+          pg.types.arrayParser
+            .create(val)
+            .parse()
+            .map((v: string) => BigInt(v));
+      // point: return string instead of {x, y}
+      if (oid === 600) return (val: string) => val;
+      // circle: return string instead of {x, y, radius}
+      if (oid === 718) return (val: string) => val;
+      // date: return string instead of Date
+      if (oid === 1082) return (val: string) => val;
+      // timestamp: return string instead of Date
+      if (oid === 1114) return (val: string) => val;
+      // timestamp[]: parse as string array
+      if (oid === 1115)
+        return (val: string) =>
+          pg.types.arrayParser
+            .create(val)
+            .parse()
+            .map((v: string) => v);
+      // interval: return string instead of {years, months, days}
+      if (oid === 1186) return (val: string) => val;
+      // bytea: wrap default parser to return Uint8Array
+      if (oid === 17) {
+        const byteaParser = pg.types.getTypeParser(oid, format);
+        return (val: string) => new Uint8Array(byteaParser(val));
+      }
+      // numeric/decimal: return string
+      if (oid === 1700) return (val: string) => val;
+      // numeric[]: parse as string array
+      if (oid === 1231)
+        return (val: string) => pg.types.arrayParser.create(val).parse();
+      // point[]: parse as string array
+      if (oid === 1017)
+        return (val: string) => pg.types.arrayParser.create(val).parse();
+      // circle[]: parse as string array
+      if (oid === 719)
+        return (val: string) => pg.types.arrayParser.create(val).parse();
+
+      // For other types, use default parsers
+      return pg.types.getTypeParser(oid, format);
+    },
+  };
+}
+
+export function createPgliteParsers() {
+  return {
+    // int8/serial8: return bigint instead of string
+    20: (val: string) => BigInt(val),
+    // timestamp: return string instead of Date
+    1114: (val: string) => val,
+    // date: return string instead of Date
+    1082: (val: string) => val,
+  };
+}
+
+export function createPorasgerTypes() {
+  return {
+    bigint: {
+      to: 20,
+      from: [20],
+      serialize: (x: bigint) => x.toString(),
+      parse: (x: string) => BigInt(x),
+    },
+    date: {
+      to: 1184,
+      from: [1114, 1082],
+      serialize: (x: Date | string) =>
+        x instanceof Date ? x.toISOString() : x,
+      parse: (x: string) => x,
+    },
+    bytea: {
+      to: 17,
+      from: [17],
+      serialize: (x: Uint8Array) => "\\x" + Buffer.from(x).toString("hex"),
+      parse: (x: string) => new Uint8Array(Buffer.from(x.slice(2), "hex")),
+    },
+  };
+}
