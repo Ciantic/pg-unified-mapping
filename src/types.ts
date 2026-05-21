@@ -1,11 +1,18 @@
 /**
  * Helper function to define input and output types for the mapping.
  *
- * Input = INSERT and UPDATE type
- * Output = SELECT output type
+ * - Input = INSERT and UPDATE input type
+ * - Output = SELECT output type
  */
-function io<const I, const O = I>(input: I): { input: I; output: O };
-function io<const I, const O = I>(input: I, output: O): { input: I; output: O };
+function io<const I extends KnownType, const O extends KnownType = I>(
+  input: I,
+): { input: I; output: O };
+
+function io<const I extends KnownType, const O extends KnownType = I>(
+  input: I,
+  output: O,
+): { input: I; output: O };
+
 function io(input: unknown, output?: unknown) {
   return { input, output: output ?? input };
 }
@@ -104,6 +111,11 @@ type TypeLiteralMap = {
   uint8Array: Uint8Array;
   object: Record<string, any>;
 };
+
+type KnownType =
+  | keyof TypeLiteralMap
+  | readonly (keyof TypeLiteralMap)[]
+  | ["array", KnownType];
 
 // Expands a const tuple like readonly ["string", "number", "bigint"] to string | number | bigint,
 // or a single literal like "number" to the actual number type
