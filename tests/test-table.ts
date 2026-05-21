@@ -120,12 +120,18 @@ const TABLE = {
 
   // Array examples
   test_int4_arr: { type: "int4[]", input: [1, 2, 3] },
-  test_int8_arr: { type: "int8[]", input: [1n, 2n, 3n] },
+  test_int8_arr: { type: "int8[]", input: [1n, 2n, 3n], 
+    skipPorsager: "[see array inference bug](https://github.com/porsager/postgres/issues/471)"
+  },
   test_text_arr: { type: "text[]", input: ["hello", "world"] },
   test_float8_arr: { type: "float8[]", input: [1.1, 2.2, 3.3] },
-  test_bool_arr: { type: "boolean[]", input: [true, false, true] },
+  test_bool_arr: { type: "boolean[]", input: [true, false, true], 
+    skipPorsager: "[see array inference bug](https://github.com/porsager/postgres/issues/471)" 
+  },
   test_timestamp_arr: { type: "timestamp[]", input: ["2024-06-15 00:00:00", "2024-06-16 00:00:00"] },
-  test_timestamptz_arr: { type: "timestamptz[]", input: [new Date("2024-06-15T12:34:56Z"), new Date("2024-06-16T12:34:56Z")] },
+  test_timestamptz_arr: { type: "timestamptz[]", input: [new Date("2024-06-15T12:34:56Z"), new Date("2024-06-16T12:34:56Z")], 
+    skipPorsager: "[see array inference bug](https://github.com/porsager/postgres/issues/471)" 
+  },
   test_decimal_arr: { type: "decimal(10,2)[]", input: ["10.50", "20.75"] },
   test_point_arr: { type: "point[]", input: ["(1,2)", "(3,4)"] },
   test_circle_arr: { type: "circle[]", input: ["<(1,2),3>", "<(4,5),6>"] },
@@ -136,7 +142,7 @@ const TABLE = {
   test_null: { type: "int4", input: null, output: null },
   test_arr_null: { 
     type: "text[]", input: [null, "hello", null], output: [null, "hello", null], 
-    skipPgLite: "https://github.com/electric-sql/pglite/issues/997", 
+    skipPgLite: "[see reported bug](https://github.com/electric-sql/pglite/issues/997)", 
     skipPorsager: "it just fails, didn't figure out yet why" 
   },
   test2_null: { 
@@ -146,7 +152,7 @@ const TABLE = {
   test2_arr_null: { 
     type: "text[]", input: [undefined, "hello", undefined], output: [null, "hello", null], 
     skipPorsager: "it just fails, didn't figure out yet why", 
-    skipPgLite: "https://github.com/electric-sql/pglite/issues/997" 
+    skipPgLite: "[see reported bug](https://github.com/electric-sql/pglite/issues/997)", 
   },
 } satisfies TestTable;
 

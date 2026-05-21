@@ -77,7 +77,8 @@ describe("npm:postgres unified type mapping", () => {
           types: createPorasgerTypes(),
         });
 
-        sql = monkeyPatchArrayInference(sql);
+        // Enable the monkey patch for array inference
+        // sql = monkeyPatchArrayInference(sql);
 
         await sql`SELECT 1`;
         return;

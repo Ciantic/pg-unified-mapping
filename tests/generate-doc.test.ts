@@ -129,10 +129,42 @@ function makeTypeInfoTableHtml() {
   </table>`;
 }
 
+const skipLabelMap: Record<string, string> = {
+  skipPorsager: "npm:postgres",
+  skipPgLite: "npm:@electric-sql/pglite",
+  skipPg: "npm:pg",
+  skipPostgreJS: "npm:postgrejs",
+};
+
+function makeQuirksHtml() {
+  const table = getTestTable();
+
+  const items = Object.entries(table)
+    .flatMap(([_name, { type, input, ...skips }]) => {
+      return Object.entries(skips)
+        .filter(([key]) => key in skipLabelMap)
+        .map(([key, reason]) => ({
+          type,
+          input: formatValue(input),
+          reason: typeof reason === "string" ? reason : "unspecified",
+          driver: skipLabelMap[key],
+        }));
+    })
+    .map(
+      ({ type, input, reason, driver }) =>
+        `* ${driver} &mdash; type <code>${type}</code> fails with input <code>${input}</code> ${reason}`,
+    )
+    .toSorted()
+    .join("\n");
+
+  return `\n${items}\n`;
+}
+
 describe("generate README.md doc", () => {
   it("generates README.md with HTML table of all test types", () => {
     const testCaseTableHtml = makeTestCaseTableHtml();
     const typeInfoTableHtml = makeTypeInfoTableHtml();
+    const quirksHtml = makeQuirksHtml();
     writeFileSync(
       "README.md",
       md`
@@ -146,6 +178,10 @@ describe("generate README.md doc", () => {
         - [npm:postgres](https://www.npmjs.com/package/postgres)
         - [npm:@electric-sql/pglite](https://www.npmjs.com/package/@electric-sql/pglite)
 
+        ## Recommendation
+
+        Use to \`pg\` and \`pglite\`, mapping is easiest with those and has least quirks.
+
         ## Usage
 
         Open [src/mapper.ts](src/mapper.ts) to see the full mapping implementation, and copy the relevant function to your project.
@@ -155,7 +191,7 @@ describe("generate README.md doc", () => {
         \`\`\`typescript
         import pg from "pg";
         
-        const client = await new pg.Client({ 
+        const client = await new pg.Client({
           host: "localhost", 
           types: createPgMapperTypes(pg), // Copy this function to your project
         });
@@ -182,6 +218,12 @@ describe("generate README.md doc", () => {
         });
         \`\`\`
 
+        postgres parser has difficulty with arrays, I've made a monkey patch \`monkeyPatchArrayInference\` but it would best if it was fixed in the library itself, see [the bug](https://github.com/porsager/postgres/issues/471).
+
+        ## Known quirks
+
+        ${quirksHtml}
+        
         ## Type mapping
 
         ${typeInfoTableHtml}

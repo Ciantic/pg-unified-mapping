@@ -8,6 +8,10 @@ Currently supported clients:
 - [npm:postgres](https://www.npmjs.com/package/postgres)
 - [npm:@electric-sql/pglite](https://www.npmjs.com/package/@electric-sql/pglite)
 
+## Recommendation
+
+Use to `pg` and `pglite`, mapping is easiest with those and has least quirks.
+
 ## Usage
 
 Open [src/mapper.ts](src/mapper.ts) to see the full mapping implementation, and copy the relevant function to your project.
@@ -17,7 +21,7 @@ Open [src/mapper.ts](src/mapper.ts) to see the full mapping implementation, and 
 ```typescript
 import pg from "pg";
 
-const client = await new pg.Client({ 
+const client = await new pg.Client({
   host: "localhost", 
   types: createPgMapperTypes(pg), // Copy this function to your project
 });
@@ -43,6 +47,21 @@ postgres({
   types: createPorasgerTypes(), // Copy this function to your project
 });
 ```
+
+postgres parser has difficulty with arrays, I've made a monkey patch `monkeyPatchArrayInference` but it would best if it was fixed in the library itself, see [the bug](https://github.com/porsager/postgres/issues/471).
+
+## Known quirks
+
+
+* npm:@electric-sql/pglite &mdash; type <code>text[]</code> fails with input <code>[null, "hello", null]</code> [see reported bug](https://github.com/electric-sql/pglite/issues/997)
+* npm:@electric-sql/pglite &mdash; type <code>text[]</code> fails with input <code>[undefined, "hello", undefined]</code> [see reported bug](https://github.com/electric-sql/pglite/issues/997)
+* npm:postgres &mdash; type <code>boolean[]</code> fails with input <code>[true, false, true]</code> [see array inference bug](https://github.com/porsager/postgres/issues/471)
+* npm:postgres &mdash; type <code>int8[]</code> fails with input <code>[1n, 2n, 3n]</code> [see array inference bug](https://github.com/porsager/postgres/issues/471)
+* npm:postgres &mdash; type <code>text</code> fails with input <code>undefined</code> documented behavior of porsager/postgres
+* npm:postgres &mdash; type <code>text[]</code> fails with input <code>[null, "hello", null]</code> it just fails, didn't figure out yet why
+* npm:postgres &mdash; type <code>text[]</code> fails with input <code>[undefined, "hello", undefined]</code> it just fails, didn't figure out yet why
+* npm:postgres &mdash; type <code>timestamptz[]</code> fails with input <code>[Date("2024-06-15T12:34:56.000Z"), Date("2024-06-16T12:34:56.000Z")]</code> [see array inference bug](https://github.com/porsager/postgres/issues/471)
+
 
 ## Type mapping
 
