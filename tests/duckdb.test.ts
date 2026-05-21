@@ -5,6 +5,7 @@ import {
   DuckDBInstance,
   DuckDBIntervalValue,
   DuckDBListValue,
+  DuckDBResultReader,
   DuckDBTimestampTZValue,
   DuckDBTimestampValue,
   DuckDBTimeTZValue,
@@ -25,7 +26,7 @@ beforeAll(async () => {
   process.env.TZ = "Europe/Helsinki";
 });
 
-function convertJSValueToDuckdbValue(param: unknown): unknown {
+function getBindParamUnified(param: unknown): unknown {
   if (param === null || param === undefined) {
     return null;
   }
@@ -36,9 +37,7 @@ function convertJSValueToDuckdbValue(param: unknown): unknown {
     return new DuckDBBlobValue(param);
   }
   if (Array.isArray(param)) {
-    return new DuckDBListValue(
-      param.map(convertJSValueToDuckdbValue) as DuckDBValue[],
-    );
+    return new DuckDBListValue(param.map(getBindParamUnified) as DuckDBValue[]);
   }
   if (typeof param === "bigint") {
     return "" + param;
@@ -88,6 +87,28 @@ const pgConverter: DuckDBValueConverter<JS> = (
   }
 };
 
+function getRowObjectsUnified(
+  result: DuckDBResultReader,
+): Record<string, unknown>[] {
+  const colTypes = result.columnTypes();
+  const colNames = result.columnNames();
+  return result.convertRowObjects(pgConverter).map((row) =>
+    Object.fromEntries(
+      Object.entries(row).map(([k, v]) => {
+        const colType = colTypes[colNames.indexOf(k)];
+        if (colType?.alias === "JSON") {
+          try {
+            return [k, JSON.parse(v as string)];
+          } catch {
+            // ignore
+          }
+        }
+        return [k, v];
+      }),
+    ),
+  );
+}
+
 describe("npm:@duckdb/node-api unified type mapping", () => {
   it("npm:@duckdb/node-api insert and select all types round-trip correctly", async () => {
     const instance = await DuckDBInstance.create(":memory:", {});
@@ -99,25 +120,9 @@ describe("npm:@duckdb/node-api unified type mapping", () => {
         await conn.run(sql);
       },
       query: async (sql, params) => {
-        let binds = params?.map(convertJSValueToDuckdbValue);
+        let binds = params?.map(getBindParamUnified);
         const res = await conn.runAndReadAll(sql, binds as any);
-        const colTypes = res.columnTypes();
-        const colNames = res.columnNames();
-        const rows = res.convertRowObjects(pgConverter).map((row) =>
-          Object.fromEntries(
-            Object.entries(row).map(([k, v]) => {
-              const colType = colTypes[colNames.indexOf(k)];
-              if (colType?.alias === "JSON") {
-                try {
-                  return [k, JSON.parse(v as string)];
-                } catch {
-                  // ignore
-                }
-              }
-              return [k, v];
-            }),
-          ),
-        );
+        const rows = getRowObjectsUnified(res);
         return { rows };
       },
     });
