@@ -1,5 +1,18 @@
 // Test table for unified mapping
 
+type TestTable = Record<
+  string,
+  {
+    type: string;
+    input: any;
+    output?: any;
+    skipPorsager?: string;
+    skipPgLite?: string;
+    skipPg?: string;
+    skipPostgreJS?: boolean;
+  }
+>;
+
 // prettier-ignore
 const TABLE = {
   // Numeric types
@@ -135,7 +148,7 @@ const TABLE = {
     skipPorsager: "it just fails, didn't figure out yet why", 
     skipPgLite: "https://github.com/electric-sql/pglite/issues/997" 
   },
-} satisfies Record<string, { type: string; input: any; output?: any, skipPorsager?: string, skipPgLite?: string, skipPg?: string }>;
+} satisfies TestTable;
 
 export function getTestTable(
   opts: {
@@ -144,20 +157,13 @@ export function getTestTable(
     skipPg?: boolean;
     skipPostgreJS?: boolean;
   } = {},
-): Record<
-  string,
-  {
-    type: string;
-    input: any;
-    output?: any;
-  }
-> {
+): TestTable {
   return Object.fromEntries(
-    Object.entries(TABLE).filter(([, v]) => {
-      if (opts.skipPg && (v as any).skipPg) return false;
-      if (opts.skipPorsager && (v as any).skipPorsager) return false;
-      if (opts.skipPgLite && (v as any).skipPgLite) return false;
-      if (opts.skipPostgreJS && (v as any).skipPostgreJS) return false;
+    Object.entries(TABLE as TestTable).filter(([, v]) => {
+      if (opts.skipPg && v.skipPg) return false;
+      if (opts.skipPorsager && v.skipPorsager) return false;
+      if (opts.skipPgLite && v.skipPgLite) return false;
+      if (opts.skipPostgreJS && v.skipPostgreJS) return false;
       return true;
     }),
   );
