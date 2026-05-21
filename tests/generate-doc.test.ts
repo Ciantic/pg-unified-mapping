@@ -63,9 +63,10 @@ function makeTestCaseTableHtml() {
   const rows = Object.entries(table)
     .map(([name, { type, input, output }]) => {
       const out = output !== undefined ? output : input;
+      const nullable = name.endsWith("_null") ? "(nullable)" : "";
       return `
       <tr>
-        <td><code>${type}</code></td>
+        <td><code>${type}</code> ${nullable}</td>
         <td><code>${formatValue(input)}</code></td>
         <td><code>${formatValue(out)}</code></td>
       </tr>`;
