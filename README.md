@@ -10,7 +10,7 @@ Currently supported clients:
 
 ## Usage
 
-Open [src/mapper.ts](src/mapper.ts) to see the full mapping implementation, and copy the relevant function to your project to use with your client.
+Open [src/mapper.ts](src/mapper.ts) to see the full mapping implementation, and copy the relevant function to your project.
 
 ### npm:pg
 
