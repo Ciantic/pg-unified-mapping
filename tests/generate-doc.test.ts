@@ -1,5 +1,6 @@
 import { writeFileSync } from "node:fs";
 import { describe, it } from "vitest";
+import { PGUNIFIED_TYPE_MAPPING } from "../src/types.ts";
 import { getTestTable } from "./test-table.ts";
 
 /**
@@ -85,15 +86,70 @@ function makeTestCaseTableHtml() {
   </table>`;
 }
 
+function formatTypeLiteral(type: unknown): string {
+  if (typeof type === "string") return type;
+  if (Array.isArray(type)) {
+    if (type[0] === "array") {
+      return `${formatTypeLiteral(type[1])}[]`;
+    }
+    return type.map(formatTypeLiteral).join(" | ");
+  }
+  return String(type);
+}
+
+function makeTypeInfoTableHtml() {
+  const mapping = PGUNIFIED_TYPE_MAPPING;
+
+  const rows = Object.entries(mapping)
+    .map(([pgType, fn]) => {
+      // Call the mapping function with appropriate dummy args based on arity
+      const arity = fn.length;
+      const args = Array(arity).fill(0) as number[];
+      const { input, output } = (fn as (...a: number[]) => any)(...args);
+      return `
+      <tr>
+        <td><code>${pgType}</code></td>
+        <td><code>${formatTypeLiteral(input)}</code></td>
+        <td><code>${formatTypeLiteral(output)}</code></td>
+      </tr>`;
+    })
+    .join("\n");
+
+  return `<table>
+    <thead>
+      <tr>
+          <th>Postgres Type</th>
+          <th>Input type (INSERT or UPDATE input)</th>
+          <th>Output type (SELECT output)</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows}
+    </tbody>
+  </table>`;
+}
+
 describe("generate README.md doc", () => {
   it("generates README.md with HTML table of all test types", () => {
     const testCaseTableHtml = makeTestCaseTableHtml();
+    const typeInfoTableHtml = makeTypeInfoTableHtml();
     writeFileSync(
       "README.md",
       md`
         # pg-unified-mapping
 
-        This library provides a unified type mapping for PostgreSQL types across different JavaScript PostgreSQL clients.
+        This library provides a unified type mapping for PostgreSQL types across different JavaScript PostgreSQL clients:
+
+        Currently supported clients:
+
+        - [npm:pg](https://www.npmjs.com/package/pg)
+        - [npm:postgres](https://www.npmjs.com/package/postgres)
+        - [npm:@electric-sql/pglite](https://www.npmjs.com/package/@electric-sql/pglite)
+
+
+        ## Type mapping
+
+        ${typeInfoTableHtml}
 
         ## Test cases
 
