@@ -148,6 +148,8 @@ describe("generate README.md doc", () => {
 
         ## Usage
 
+        Open [src/mapper.ts](src/mapper.ts) to see the full mapping implementation, and copy the relevant function to your project.
+
         ### npm:pg
 
         \`\`\`typescript
