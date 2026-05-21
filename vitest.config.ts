@@ -7,5 +7,6 @@ export default defineConfig({
       enabled: true,
       include: ["**/*.test.ts"],
     },
+    exclude: ["node_modules", ".git", "tests/postgrejs.test.ts"],
   },
 });

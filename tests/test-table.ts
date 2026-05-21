@@ -114,4 +114,10 @@ export const TABLE = {
   test_decimal_arr: { type: "decimal(10,2)[]", input: ["10.50", "20.75"] },
   test_point_arr: { type: "point[]", input: ["(1,2)", "(3,4)"] },
   test_circle_arr: { type: "circle[]", input: ["<(1,2),3>", "<(4,5),6>"] },
+
+  // Nullness
+  test_null: { type: "int4", input: null, output: null },
+
+  // Note undefined is not allowed by porsager/postgres, but works for pg and pglite
+  // test2_null: { type: "text", input: undefined, output: null },
 } satisfies Record<string, { type: string; input: any; output?: any }>;

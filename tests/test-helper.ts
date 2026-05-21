@@ -1,4 +1,3 @@
-import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { PGUNIFIED_TYPE_MAPPING } from "pg-unified-mapping";
 import { expect } from "vitest";
 
@@ -8,7 +7,6 @@ export type TestTable = Record<
     type: string;
     input: any;
     output?: any;
-    buggyOutputSchema?: StandardSchemaV1<any, any>;
   }
 >;
 
@@ -32,6 +30,10 @@ function primitiveValidation(type: MapperRec, value: any): boolean {
 
   // Single primitive type
   switch (type) {
+    case "null":
+      return value === null;
+    case "undefined":
+      return value === undefined;
     case "string":
       return typeof value === "string";
     case "number":
@@ -68,7 +70,12 @@ export async function runMappingTest(opts: Opts) {
   const createTableSql = `
       CREATE TEMP TABLE test_pg (
         ${Object.entries(opts.table)
-          .map(([columnName, { type }]) => `"${columnName}" ${type} NOT NULL`)
+          .map(([columnName, { type }]) => {
+            if (columnName.endsWith("_null")) {
+              return `"${columnName}" ${type} NULL`;
+            }
+            return `"${columnName}" ${type} NOT NULL`;
+          })
           .join(",\n        ")}
       );
     `;
@@ -81,14 +88,14 @@ export async function runMappingTest(opts: Opts) {
     ]),
   );
 
-  const expectValue = Object.fromEntries(
-    Object.entries(opts.table).map(
-      ([columnName, p]: [string, { output?: any; input: any }]) => [
-        columnName,
-        p.output ?? p.input,
-      ],
-    ),
-  );
+  // const expectValue = Object.fromEntries(
+  //   Object.entries(opts.table).map(
+  //     ([columnName, p]: [string, { output?: any; input: any }]) => [
+  //       columnName,
+  //       p.output ?? p.input,
+  //     ],
+  //   ),
+  // );
 
   // Insert
   const columns = Object.keys(insertValue);
@@ -101,7 +108,8 @@ export async function runMappingTest(opts: Opts) {
   // Select
   const result = await opts.query(`SELECT * FROM test_pg`);
   const row = result.rows[0] as Record<string, any>;
-  expect(row).toMatchObject(expectValue);
+  // Sanity check - ensure we got the expected number of columns back
+  // expect(Object.keys(row).length).toBe(Object.keys(expectValue).length);
 
   // Validate against mapping
   Object.entries(opts.table).forEach(
@@ -109,6 +117,11 @@ export async function runMappingTest(opts: Opts) {
       if (typeof output === "undefined") {
         output = input;
       }
+      expect(row[columnName], `Column "${columnName}"`).toEqual(output);
+      if (columnName.endsWith("_null")) {
+        return; // skip validation for nullability test columns
+      }
+
       const key = type as keyof typeof opts.mapping;
       let mapping = opts.mapping[key] as Mapper;
       const isArrayType = type.endsWith("[]");
@@ -157,7 +170,7 @@ export async function runMappingTest(opts: Opts) {
       let outputValidator: MapperRec = types.output ?? types.input;
 
       expect(
-        primitiveValidation(inputValidator as any, input),
+        primitiveValidation(inputValidator, input),
         `Input validation failed for column "${columnName}"`,
       ).toBe(true);
       expect(
