@@ -58,6 +58,7 @@ const monkeyPatchArrayInference = (
 };
 
 beforeAll(async () => {
+  process.env.TZ = "Europe/Helsinki";
   await startContainer();
 });
 

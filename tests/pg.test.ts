@@ -9,6 +9,7 @@ import { runMappingTest } from "./test-helper.ts";
 import { getTestTable } from "./test-table.ts";
 
 beforeAll(async () => {
+  process.env.TZ = "Europe/Helsinki";
   await startContainer();
 });
 

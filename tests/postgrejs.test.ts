@@ -12,6 +12,10 @@ import { startContainer } from "./test-container.ts";
 import { runMappingTest } from "./test-helper.ts";
 import { getTestTable } from "./test-table.ts";
 
+beforeAll(async () => {
+  process.env.TZ = "Europe/Helsinki";
+});
+
 // This mapping is very sloppy, we need to clean this up at somepoint!
 
 function parsePostgresArray(

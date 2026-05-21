@@ -1,16 +1,6 @@
 import type { PGUNIFIED_TYPE_MAPPING } from "pg-unified-mapping";
 import { expect } from "vitest";
-import type { getTestTable } from "./test-table.ts";
-
-export type TestTable = Record<
-  string,
-  {
-    type: string;
-    input: any;
-    output?: any;
-    skipPorsager?: boolean;
-  }
->;
+import type { TestTable } from "./test-table.ts";
 
 type MapperRec = string | readonly string[] | ["array", MapperRec];
 type Mapper = () => {
@@ -62,8 +52,8 @@ function primitiveValidation(type: MapperRec, value: any): boolean {
 }
 
 interface Opts {
-  table: ReturnType<typeof getTestTable>;
-  mapping: typeof PGUNIFIED_TYPE_MAPPING;
+  table: TestTable;
+  mapping?: typeof PGUNIFIED_TYPE_MAPPING;
   exec(sql: string): Promise<void>;
   query(sql: string, params?: any[]): Promise<{ rows: Record<string, any>[] }>;
 }
@@ -120,6 +110,10 @@ export async function runMappingTest(opts: Opts) {
         output = input;
       }
       expect(row[columnName], `Column "${columnName}"`).toEqual(output);
+      if (!opts.mapping) {
+        return; // skip validation if no mapping provided
+      }
+
       if (columnName.endsWith("_null")) {
         return; // skip validation for nullability test columns
       }

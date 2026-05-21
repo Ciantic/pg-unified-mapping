@@ -1,6 +1,6 @@
 // Test table for unified mapping
 
-type TestTable = Record<
+export type TestTable = Record<
   string,
   {
     type: string;
@@ -9,7 +9,8 @@ type TestTable = Record<
     skipPorsager?: string;
     skipPgLite?: string;
     skipPg?: string;
-    skipPostgreJS?: boolean;
+    skipPostgreJS?: string;
+    note?: string;
   }
 >;
 

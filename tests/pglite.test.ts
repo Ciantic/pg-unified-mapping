@@ -3,9 +3,13 @@ import {
   createPgliteParsers,
   PGUNIFIED_TYPE_MAPPING,
 } from "pg-unified-mapping";
-import { describe, it } from "vitest";
+import { beforeAll, describe, it } from "vitest";
 import { runMappingTest } from "./test-helper.ts";
 import { getTestTable } from "./test-table.ts";
+
+beforeAll(async () => {
+  process.env.TZ = "Europe/Helsinki";
+});
 
 describe("npm:@electric-sql/pglite unified type mapping", () => {
   it("npm:@electric-sql/pglite insert and select all types round-trip correctly", async () => {
