@@ -1,6 +1,8 @@
 # pg-unified-mapping
 
-This library provides a unified type mapping for PostgreSQL types across different JavaScript PostgreSQL clients:
+This library provides a unified type mapping for PostgreSQL types across different JavaScript PostgreSQL clients.
+
+If you want to see why this is needed, check out the [Default Madness](./DEFAULT-MADNESS.md) document.
 
 Currently supported clients:
 

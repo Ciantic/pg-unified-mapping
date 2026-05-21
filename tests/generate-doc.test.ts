@@ -1,6 +1,7 @@
 import { writeFileSync } from "node:fs";
 import { describe, it } from "vitest";
 import { PGUNIFIED_TYPE_MAPPING } from "../src/types.ts";
+import { DEFAULTS_TEST_TABLE } from "./default-madness.test.ts";
 import { getTestTable } from "./test-table.ts";
 
 /**
@@ -161,6 +162,38 @@ function makeQuirksHtml() {
   return `\n${items}\n`;
 }
 
+function makeDefaultsMadnessTable() {
+  const rows = Object.entries(DEFAULTS_TEST_TABLE)
+    .map(
+      ([_name, { type, input, output_pg, output_pglite, output_postgres }]) => {
+        return `
+      <tr>
+        <td><code>${type}</code></td>
+        <td><code>${formatValue(input)}</code></td>
+        <td><code>${formatValue(output_pg)}</code></td>
+        <td><code>${formatValue(output_pglite)}</code></td>
+        <td><code>${formatValue(output_postgres)}</code></td>
+      </tr>`;
+      },
+    )
+    .join("\n");
+
+  return `<table>
+    <thead>
+      <tr>
+        <th>Postgres Type</th>
+        <th>Input</th>
+        <th>npm:pg output</th>
+        <th>npm:@electric-sql/pglite output</th>
+        <th>npm:postgres output</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows}
+    </tbody>
+  </table>`;
+}
+
 describe("generate README.md doc", () => {
   it("generates README.md with HTML table of all test types", () => {
     const testCaseTableHtml = makeTestCaseTableHtml();
@@ -171,7 +204,9 @@ describe("generate README.md doc", () => {
       md`
         # pg-unified-mapping
 
-        This library provides a unified type mapping for PostgreSQL types across different JavaScript PostgreSQL clients:
+        This library provides a unified type mapping for PostgreSQL types across different JavaScript PostgreSQL clients.
+
+        If you want to see why this is needed, check out the [Default Madness](./DEFAULT-MADNESS.md) document.
 
         Currently supported clients:
 
@@ -240,6 +275,25 @@ describe("generate README.md doc", () => {
         To create more test cases, edit [tests/test-table.ts](tests/test-table.ts).
 
         ${testCaseTableHtml}
+      `,
+    );
+  });
+
+  it("generates DEFAULT-MADNESS.md with default behavior comparison table", () => {
+    const defaultsMadnessHtml = makeDefaultsMadnessTable();
+    writeFileSync(
+      "DEFAULT-MADNESS.md",
+      md`
+        # Default Madness
+
+        This document shows how different PostgreSQL clients handle date/time types **without** any unified mapping applied.
+        The purpose is to document the inconsistencies in default behavior across clients.
+
+        All tests run with \`TZ=Europe/Helsinki\`.
+
+        PG Library even advices *not* to use \`timestamp\` because it changes the dates each time if you take the value it outputs and store it back!
+
+        ${defaultsMadnessHtml}
       `,
     );
   });
