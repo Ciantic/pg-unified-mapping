@@ -72,7 +72,6 @@ const pgConverter: DuckDBValueConverter<JS> = (
     case DuckDBTypeId.TIME_TZ:
       return (value as DuckDBTimeTZValue).toString();
     case DuckDBTypeId.INTERVAL:
-      console.log("Converting interval value:", value.toString());
       return (value as DuckDBIntervalValue)
         .toString()
         .replace("months", "mons");
