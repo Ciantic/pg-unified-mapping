@@ -69,6 +69,8 @@ Forget it for now! I have it as a test case, but mapping is so difficult that wh
 
 ## Type mapping
 
+Type mapping is also defined as const strings in [src/types.ts](src/types.ts), this could be used to e.g. infer Zod or Valibot or Kysely schema automatically.
+
 <table>
 <thead>
 <tr>
@@ -340,6 +342,8 @@ Forget it for now! I have it as a test case, but mapping is so difficult that wh
 </table>
 
 ## Test cases
+
+To create more test cases, edit [tests/test-table.ts](tests/test-table.ts).
 
 <table>
 <thead>

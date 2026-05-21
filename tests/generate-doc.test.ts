@@ -231,9 +231,13 @@ describe("generate README.md doc", () => {
 
         ## Type mapping
 
+        Type mapping is also defined as const strings in [src/types.ts](src/types.ts), this could be used to e.g. infer Zod or Valibot or Kysely schema automatically.
+
         ${typeInfoTableHtml}
 
         ## Test cases
+
+        To create more test cases, edit [tests/test-table.ts](tests/test-table.ts).
 
         ${testCaseTableHtml}
       `,
