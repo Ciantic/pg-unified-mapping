@@ -119,5 +119,5 @@ export const TABLE = {
   test_null: { type: "int4", input: null, output: null },
 
   // Note undefined is not allowed by porsager/postgres, but works for pg and pglite
-  // test2_null: { type: "text", input: undefined, output: null },
-} satisfies Record<string, { type: string; input: any; output?: any }>;
+  test2_null: { type: "text", input: undefined, output: null, skipPorsager: true },
+} satisfies Record<string, { type: string; input: any; output?: any, skipPorsager?: boolean }>;

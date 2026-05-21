@@ -7,6 +7,7 @@ export type TestTable = Record<
     type: string;
     input: any;
     output?: any;
+    skipPorsager?: boolean;
   }
 >;
 

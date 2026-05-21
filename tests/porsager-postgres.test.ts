@@ -93,8 +93,11 @@ describe("npm:postgres unified type mapping", () => {
   }, 30000);
 
   it("npm:pg insert and select all types round-trip correctly", async () => {
+    const filteredTable = Object.fromEntries(
+      Object.entries(TABLE).filter(([, v]) => !(v as any).skipPorsager),
+    );
     await runMappingTest({
-      table: TABLE,
+      table: filteredTable,
       mapping: PGUNIFIED_TYPE_MAPPING,
       exec: async (statement) => {
         await sql.unsafe(statement).execute();
