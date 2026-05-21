@@ -146,6 +146,39 @@ describe("generate README.md doc", () => {
         - [npm:postgres](https://www.npmjs.com/package/postgres)
         - [npm:@electric-sql/pglite](https://www.npmjs.com/package/@electric-sql/pglite)
 
+        ## Usage
+
+        ### npm:pg
+
+        \`\`\`typescript
+        import pg from "pg";
+        
+        const client = await new pg.Client({ 
+          host: "localhost", 
+          types: createPgMapperTypes(pg), // Copy this function to your project
+        });
+        \`\`\`
+
+        ### npm:@electric-sql/pglite
+
+        \`\`\`typescript
+        import { PGlite } from "@electric-sql/pglite";
+
+        new PGlite({
+          parsers: createPgliteParsers(), // Copy this function to your project
+        });
+        \`\`\`
+        
+        ### npm:postgres
+
+        \`\`\`typescript
+        import postgres from "postgres";
+
+        postgres({
+          host: "localhost",
+          types: createPorasgerTypes(), // Copy this function to your project
+        });
+        \`\`\`
 
         ## Type mapping
 
