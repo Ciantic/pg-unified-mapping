@@ -116,8 +116,10 @@ export const TABLE = {
   test_circle_arr: { type: "circle[]", input: ["<(1,2),3>", "<(4,5),6>"] },
 
   // Nullness
+  // - pglite has bug, can't handle nulls in array: https://github.com/electric-sql/pglite/issues/997
+  // - porsager has feature, can't handle undefined input for non-nullable columns
   test_null: { type: "int4", input: null, output: null },
-
-  // Note undefined is not allowed by porsager/postgres, but works for pg and pglite
+  test_arr_null: { type: "text[]", input: [null, "hello", null], output: [null, "hello", null], skipPgLite: true, skipPorsager: true },
   test2_null: { type: "text", input: undefined, output: null, skipPorsager: true },
-} satisfies Record<string, { type: string; input: any; output?: any, skipPorsager?: boolean }>;
+  test2_arr_null: { type: "text[]", input: [undefined, "hello", undefined], output: [null, "hello", null], skipPorsager: true, skipPgLite: true },
+} satisfies Record<string, { type: string; input: any; output?: any, skipPorsager?: boolean, skipPgLite?: boolean }>;

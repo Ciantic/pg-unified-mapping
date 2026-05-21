@@ -9,11 +9,14 @@ import { TABLE } from "./test-table.ts";
 
 describe("npm:@electric-sql/pglite unified type mapping", () => {
   it("npm:@electric-sql/pglite insert and select all types round-trip correctly", async () => {
+    const filteredTable = Object.fromEntries(
+      Object.entries(TABLE).filter(([, v]) => !(v as any).skipPgLite),
+    );
     const pglite = new PGlite({
       parsers: createPgliteParsers(),
     });
     await runMappingTest({
-      table: TABLE,
+      table: filteredTable,
       mapping: PGUNIFIED_TYPE_MAPPING,
       exec: async (sql) => {
         await pglite.exec(sql);
