@@ -109,11 +109,11 @@ export function createPgliteParsers() {
  *
  * postgres({
  *   ...options,
- *   types: createPorasgerTypes(),
+ *   types: createNpmPostgresTypes(),
  * });
  * ```
  */
-export function createPorasgerTypes() {
+export function createNpmPostgresTypes() {
   return {
     bigint: {
       to: 20,

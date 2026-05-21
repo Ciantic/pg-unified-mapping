@@ -44,7 +44,7 @@ import postgres from "postgres";
 
 postgres({
   host: "localhost",
-  types: createPorasgerTypes(), // Copy this function to your project
+  types: createNpmPostgresTypes(), // Copy this function to your project
 });
 ```
 

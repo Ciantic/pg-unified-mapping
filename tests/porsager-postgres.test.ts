@@ -1,5 +1,5 @@
 import {
-  createPorasgerTypes,
+  createNpmPostgresTypes,
   PGUNIFIED_TYPE_MAPPING,
 } from "pg-unified-mapping";
 import postgres from "postgres";
@@ -74,7 +74,7 @@ describe("npm:postgres unified type mapping", () => {
           user: "postgres",
           password: "test",
           database: "test",
-          types: createPorasgerTypes(),
+          types: createNpmPostgresTypes(),
         });
 
         // Enable the monkey patch for array inference
