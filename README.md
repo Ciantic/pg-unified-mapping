@@ -56,6 +56,10 @@ postgres parser has difficulty with arrays, I've made a monkey patch `monkeyPatc
 
 Forget it for now! I have it as a test case, but mapping is so difficult that what ever for now.
 
+### DuckDB
+
+DuckDB is not Postgres, but it supports most of PG dialect and types. I made also test and mapper for it, but for now it is contained in just the test file. See [duckdb.test.ts](./tests/duckdb.test.ts).
+
 ## Known quirks
 
 
@@ -791,8 +795,8 @@ To create more test cases, edit [tests/test-table.ts](tests/test-table.ts).
 
 <tr>
 <td><code>decimal(10,2)[]</code> </td>
-<td><code>["10.50", "20.75"]</code></td>
-<td><code>["10.50", "20.75"]</code></td>
+<td><code>["10.55", "20.75"]</code></td>
+<td><code>["10.55", "20.75"]</code></td>
 </tr>
 
 <tr>

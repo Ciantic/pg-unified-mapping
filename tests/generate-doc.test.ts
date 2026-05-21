@@ -294,6 +294,10 @@ describe("generate README.md doc", () => {
 
         Forget it for now! I have it as a test case, but mapping is so difficult that what ever for now.
 
+        ### DuckDB
+
+        DuckDB is not Postgres, but it supports most of PG dialect and types. I made also test and mapper for it, but for now it is contained in just the test file. See [duckdb.test.ts](./tests/duckdb.test.ts).
+
         ## Known quirks
 
         ${quirksHtml}
