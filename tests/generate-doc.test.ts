@@ -45,14 +45,48 @@ function md(strings: TemplateStringsArray, ...values: any[]) {
   return stripped;
 }
 
-function formatValue(value: unknown): string {
+const UNIQUE_COLOR_PALETTE = [
+  "#4fc3f7", // light blue
+  "#ffb74d", // orange
+  "#81c784", // green
+  "#f06292", // pink
+  "#ce93d8", // purple
+  "#fff176", // yellow
+  "#80cbc4", // teal
+  "#ff8a65", // deep orange
+];
+const uniqueColorMap = new Map<string, string>();
+
+function getUniqueColor(value: string): string {
+  if (!uniqueColorMap.has(value)) {
+    uniqueColorMap.set(
+      value,
+      UNIQUE_COLOR_PALETTE[uniqueColorMap.size % UNIQUE_COLOR_PALETTE.length]!,
+    );
+  }
+  return uniqueColorMap.get(value)!;
+}
+
+function colorizeIsoString(iso: string): string {
+  const color = getUniqueColor(iso);
+  // Colorize the time part of the ISO string for better visibility in the docs
+  let [date, time] = iso.split("T");
+  if (!time) throw new Error(`Invalid ISO string: ${iso}`);
+  time = time.replace(".000Z", "Z"); // Remove milliseconds for cleaner display
+
+  return `<span style="background: black; color: ${color}">${date}<span style="color: gray">T</span>${time}</span>`;
+}
+
+function formatValue(value: unknown, colorize: boolean = false): string {
   if (value === undefined) return "undefined";
   if (value === null) return "null";
   if (typeof value === "bigint") return `${value}n`;
-  if (value instanceof Date) return `Date("${value.toISOString()}")`;
+  if (value instanceof Date)
+    return `Date("${colorize ? colorizeIsoString(value.toISOString()) : value.toISOString()}")`;
   if (value instanceof Uint8Array)
     return `Uint8Array([${Array.from(value).join(", ")}])`;
-  if (Array.isArray(value)) return `[${value.map(formatValue).join(", ")}]`;
+  if (Array.isArray(value))
+    return `[${value.map((v) => formatValue(v)).join(", ")}]`;
   if (typeof value === "object") return JSON.stringify(value);
   if (typeof value === "string") return `"${value}"`;
   return String(value);
@@ -169,10 +203,10 @@ function makeDefaultsMadnessTable() {
         return `
       <tr>
         <td><code>${type}</code></td>
-        <td><code>${formatValue(input)}</code></td>
-        <td><code>${formatValue(output_pg)}</code></td>
-        <td><code>${formatValue(output_pglite)}</code></td>
-        <td><code>${formatValue(output_postgres)}</code></td>
+        <td><code>${formatValue(input, true)}</code></td>
+        <td><code>${formatValue(output_pg, true)}</code></td>
+        <td><code>${formatValue(output_pglite, true)}</code></td>
+        <td><code>${formatValue(output_postgres, true)}</code></td>
       </tr>`;
       },
     )
@@ -291,7 +325,7 @@ describe("generate README.md doc", () => {
 
         All tests run with \`TZ=Europe/Helsinki\`.
 
-        PG Library even advices *not* to use \`timestamp\` because it changes the dates each time if you take the value it outputs and store it back!
+        PG Library even advices *not* to use \`timestamp\`.
 
         ${defaultsMadnessHtml}
       `,
