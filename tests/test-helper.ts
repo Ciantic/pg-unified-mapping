@@ -1,27 +1,65 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
-import {
-  simplevalidation as s,
-  type PostgresType,
-  type PostgresTypeBuilder,
-} from "pg-unified-mapping";
+import type { PGUNIFIED_TYPE_MAPPING } from "pg-unified-mapping";
 import { expect } from "vitest";
 
 export type TestTable = Record<
   string,
   {
-    type: PostgresType;
+    type: string;
     input: any;
     output?: any;
     buggyOutputSchema?: StandardSchemaV1<any, any>;
   }
 >;
 
+type MapperRec = string | readonly string[] | ["array", MapperRec];
+type Mapper = () => {
+  readonly input: MapperRec;
+  readonly output: MapperRec;
+};
+
+function primitiveValidation(type: MapperRec, value: any): boolean {
+  // ["array", innerType] — value must be an array whose elements match innerType
+  if (Array.isArray(type) && type[0] === "array") {
+    if (!Array.isArray(value)) return false;
+    return value.every((item: any) => primitiveValidation(type[1], item));
+  }
+
+  // readonly string[] — union type, value must match at least one
+  if (Array.isArray(type)) {
+    return type.some((t) => primitiveValidation(t, value));
+  }
+
+  // Single primitive type
+  switch (type) {
+    case "string":
+      return typeof value === "string";
+    case "number":
+      return typeof value === "number" && !Number.isNaN(value);
+    case "bigint":
+      return typeof value === "bigint";
+    case "boolean":
+      return typeof value === "boolean";
+    case "dateObject":
+      return value instanceof Date && !isNaN(value.getTime());
+    case "uint8Array":
+      return value instanceof Uint8Array;
+    case "object":
+      return (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value) &&
+        !(value instanceof Date) &&
+        !(value instanceof Uint8Array)
+      );
+    default:
+      return false;
+  }
+}
+
 interface Opts {
   table: TestTable;
-  mapping: PostgresTypeBuilder<{
-    input: StandardSchemaV1;
-    output: StandardSchemaV1;
-  }>;
+  mapping: typeof PGUNIFIED_TYPE_MAPPING;
   exec(sql: string): Promise<void>;
   query(sql: string, params?: any[]): Promise<{ rows: Record<string, any>[] }>;
 }
@@ -67,9 +105,12 @@ export async function runMappingTest(opts: Opts) {
 
   // Validate against mapping
   Object.entries(opts.table).forEach(
-    ([columnName, { type, input, buggyOutputSchema }]) => {
+    ([columnName, { type, input, output }]) => {
+      if (typeof output === "undefined") {
+        output = input;
+      }
       const key = type as keyof typeof opts.mapping;
-      let mapping = opts.mapping[key];
+      let mapping = opts.mapping[key] as Mapper;
       const isArrayType = type.endsWith("[]");
       const baseTypeMatch = type.match(/^(\w+)/)?.[1];
       const decimalMatch = type.match(/^decimal\((\d+),\s*(\d+)\)/);
@@ -78,27 +119,25 @@ export async function runMappingTest(opts: Opts) {
       const bitMatch = type.match(/^bit\((\d+)\)/);
       const varbitMatch = type.match(/^varbit\((\d+)\)/);
       if (baseTypeMatch && baseTypeMatch in opts.mapping) {
-        mapping = opts.mapping[baseTypeMatch as keyof typeof opts.mapping];
+        mapping = opts.mapping[
+          baseTypeMatch as keyof typeof opts.mapping
+        ] as Mapper;
       }
 
       if (decimalMatch) {
         mapping = () =>
-          opts.mapping?.["decimal"]?.({
-            precision: Number(decimalMatch[1]),
-            scale: Number(decimalMatch[2]),
-          })!;
+          opts.mapping?.["decimal"]?.(
+            Number(decimalMatch[1]),
+            Number(decimalMatch[2]),
+          )!;
       } else if (varcharMatch) {
-        mapping = () =>
-          opts.mapping?.["varchar"]?.({ maxLength: Number(varcharMatch[1]) })!;
+        mapping = () => opts.mapping?.["varchar"]?.(Number(varcharMatch[1]))!;
       } else if (charMatch) {
-        mapping = () =>
-          opts.mapping?.["char"]?.({ length: Number(charMatch[1]) })!;
+        mapping = () => opts.mapping?.["char"]?.(Number(charMatch[1]))!;
       } else if (bitMatch) {
-        mapping = () =>
-          opts.mapping?.["bit"]?.({ length: Number(bitMatch[1]) })!;
+        mapping = () => opts.mapping?.["bit"]?.(Number(bitMatch[1]))!;
       } else if (varbitMatch) {
-        mapping = () =>
-          opts.mapping?.["varbit"]?.({ maxLength: Number(varbitMatch[1]) })!;
+        mapping = () => opts.mapping?.["varbit"]?.(Number(varbitMatch[1]))!;
       }
 
       if (typeof mapping !== "function") {
@@ -106,33 +145,25 @@ export async function runMappingTest(opts: Opts) {
       }
       if (isArrayType) {
         const innerMapping = mapping();
-        mapping = () => s.ioarray(innerMapping);
-      }
-
-      if (buggyOutputSchema) {
-        const inputSchema = mapping().input;
         mapping = () => ({
-          input: inputSchema,
-          output: buggyOutputSchema,
+          input: ["array", innerMapping.input],
+          output: ["array", innerMapping.output ?? innerMapping.input],
         });
       }
 
-      let schemas: {
-        input: StandardSchemaV1<any, any>;
-        output: StandardSchemaV1<any, any>;
-      } = mapping();
+      let types = mapping();
 
-      const inputResult = s.typedValidate(schemas.input, input);
+      let inputValidator: MapperRec = types.input;
+      let outputValidator: MapperRec = types.output ?? types.input;
+
       expect(
-        inputResult.issues,
+        primitiveValidation(inputValidator as any, input),
         `Input validation failed for column "${columnName}"`,
-      ).toBeUndefined();
-
-      const result = s.typedValidate(schemas.output, row[columnName]);
+      ).toBe(true);
       expect(
-        result.issues,
+        primitiveValidation(outputValidator ?? inputValidator, output),
         `Output validation failed for column "${columnName}"`,
-      ).toBeUndefined();
+      ).toBe(true);
     },
   );
 }

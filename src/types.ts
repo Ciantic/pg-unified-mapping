@@ -1,216 +1,120 @@
-export const BASE_POSTGRES_TYPES = [
-  // Numeric types
-  "int2", // smallint
-  "int4", // integer
-  "int8", // bigint
-  "serial2",
-  "serial4", // serial
-  "serial8", // bigserial
-  "float4", // real
-  "float8", // double precision
-  "money",
-  "decimal", // numeric
+/**
+ * Helper function to define input and output types for the mapping.
+ *
+ * Input = INSERT and UPDATE type
+ * Output = SELECT output type
+ */
+function io<const I, const O = I>(input: I): { input: I; output: O };
+function io<const I, const O = I>(input: I, output: O): { input: I; output: O };
+function io(input: unknown, output?: unknown) {
+  return { input, output: output ?? input };
+}
+
+const numeric = ["string", "number", "bigint"] as const;
+
+export const PGUNIFIED_TYPE_MAPPING = {
+  // Numeric types, alias follows in comments
+  int2: () => io(numeric, "number"), // smallint
+  int4: () => io(numeric, "number"), // integer
+  int8: () => io(numeric, "bigint"), // bigint
+  serial2: () => io(numeric, "number"), // smallserial
+  serial4: () => io(numeric, "number"), // serial
+  serial8: () => io(numeric, "bigint"), // bigserial
+  float4: () => io(numeric, "number"), // real
+  float8: () => io(numeric, "number"), // double precision
+  decimal: (p: number, s: number) => io(numeric, "string"), // numeric
+  money: () => io("string"),
+
   // Character types
-  "text",
+  text: () => io("string"),
+  varchar: (maxLength: number) => io("string"),
+  char: (length: number) => io("string"),
+
   // Binary types
-  "bytea",
+  bytea: () => io("uint8Array"),
+
   // Date/Time types
-  "timestamp",
-  "timestamptz",
-  "date",
-  "time",
-  "timetz",
-  "interval",
+  timestamp: (precision?: number) => io("string"), // Naive datetime as YYYY-MM-DD HH:MM:SS
+  timestamptz: () => io("dateObject"),
+  date: () => io("string"), // Date as YYYY-MM-DD string
+  time: (precision?: number) => io("string"), // Time as HH:MM:SS string
+  timetz: (precision?: number) => io("string"), // Time with timezone as HH:MM:SS±HH:MM string
+  interval: (precision?: number) => io("string"),
+
   // Boolean type
-  "boolean",
+  boolean: () => io("boolean"),
+
   // UUID type
-  "uuid",
+  uuid: () => io("string"),
+
   // JSON types
-  "jsonb",
-  "json",
+  jsonb: () => io("object"),
+  json: () => io("object"),
+
   // Network address types
-  "inet",
-  "cidr",
-  "macaddr",
-  "macaddr8",
+  inet: () => io("string"),
+  cidr: () => io("string"),
+  macaddr: () => io("string"),
+  macaddr8: () => io("string"),
+
+  // Bit string types
+  bit: (length: number) => io("string"),
+  varbit: (maxLength: number) => io("string"),
+
   // Text search types
-  "tsvector",
-  "tsquery",
+  tsvector: () => io("string"),
+  tsquery: () => io("string"),
+
   // XML type
-  "xml",
+  xml: () => io("string"),
+
   // Geometric types
-  "point",
-  "line",
-  "lseg",
-  "box",
-  "path",
-  "polygon",
-  "circle",
+  point: () => io("string"),
+  line: () => io("string"),
+  lseg: () => io("string"),
+  box: () => io("string"),
+  path: () => io("string"),
+  polygon: () => io("string"),
+  circle: () => io("string"),
+
   // Object identifier / system types
-
-  // "xmin" is a system column that exists in every table, but it is not a real
-  // type that can be used in column definitions
-
-  "pg_lsn",
-  "pg_snapshot",
-] as const;
-
-// prettier-ignore
-export const BASE_POSTGRES_VARIADIC_TYPES = {
-  decimal: ((p) => !p ? "decimal" : `decimal(${p.precision},${p.scale})`) as DecimalFn,
-  timestamp: ((p) => !p ? "timestamp" : `timestamp(${p.precision})`) as TimestampFn,
-  timestamptz: ((p) => !p ? "timestamptz" : `timestamptz(${p.precision})`) as TimestamptzFn,
-  time: ((p) => (!p ? "time" : `time(${p.precision})`)) as TimeFn,
-  timetz: ((p) => (!p ? "timetz" : `timetz(${p.precision})`)) as TimetzFn,
-  interval: ((p) => !p ? "interval" : `interval(${p.precision})`) as IntervalFn,
-
-  varchar: ((p) => (!p ? "varchar" : `varchar(${p.maxLength})`)) as VarcharFn,
-  char: ((p) => (!p ? "char" : `char(${p.length})`)) as CharFn,
-  bit: ((p) => (!p ? "bit" : `bit(${p.length})`)) as BitFn,
-  varbit: ((p) => (!p ? "varbit" : `varbit(${p.maxLength})`)) as VarbitFn,
+  xmin: () => io("number"),
+  pg_lsn: () => io("string"),
+  pg_snapshot: () => io("string"),
 } as const;
 
-type DecimalFn = {
-  (): "decimal";
-  <const P extends number, const S extends number>(params: {
-    precision: P;
-    scale: S;
-  }): `decimal(${P},${S})`;
-};
-
-type TimestampFn = {
-  (): "timestamp";
-  <const P extends number>(params: { precision: P }): `timestamp(${P})`;
-};
-
-type TimestamptzFn = {
-  (): "timestamptz";
-  <const P extends number>(params: { precision: P }): `timestamptz(${P})`;
-};
-
-type TimeFn = {
-  (): "time";
-  <const P extends number>(params: { precision: P }): `time(${P})`;
-};
-
-type TimetzFn = {
-  (): "timetz";
-  <const P extends number>(params: { precision: P }): `timetz(${P})`;
-};
-
-type IntervalFn = {
-  (): "interval";
-  <const P extends number>(params: { precision: P }): `interval(${P})`;
-};
-
-// These types have a parameter as requirement:
-type VarcharFn = {
-  <const N extends number>(params: { maxLength: N }): `varchar(${N})`;
-};
-
-type CharFn = {
-  <const N extends number>(params: { length: N }): `char(${N})`;
-};
-
-type BitFn = {
-  <const N extends number>(params: { length: N }): `bit(${N})`;
-};
-
-type VarbitFn = {
-  <const N extends number>(params: { maxLength: N }): `varbit(${N})`;
-};
-
-type ArrayDim<
-  T extends string,
-  Dims extends (number | undefined)[],
-> = Dims extends [
-  infer First extends number | undefined,
-  ...infer Rest extends (number | undefined)[],
-]
-  ? First extends number
-    ? ArrayDim<`${T}[${First}]`, Rest>
-    : ArrayDim<`${T}[]`, Rest>
-  : T;
-
-type EnsureOneDim<Dims extends (number | undefined)[]> = Dims extends {
-  length: 0;
-}
-  ? [undefined]
-  : Dims;
-
 /**
- * Create an array type string based on a base type and dimensions.
+ * Type that represents the input and output types for a given PostgreSQL type mapping.
  *
- * Examples:
- *
- * ```
- * makeArrayType("text"): "text[]"
- * makeArrayType("text", 4): "text[4]"
- * makeArrayType("text", undefined, undefined): "text[][]"
- * makeArrayType("text", 4, 5): "text[4][5]"
- * makeArrayType("text", undefined, 3): "text[][3]"
- * ```
+ * Input = Type used for INSERT and UPDATE operations
+ * Output = Type used for SELECT operations results
  */
-export function makeArrayType<
-  T extends BasePostgresType | BasePostgresVariadicTypes,
-  const N extends (number | undefined)[] = [],
->(baseType: T, ...dimensions: N): ArrayDim<T, EnsureOneDim<N>> {
-  const dims: (number | undefined)[] =
-    dimensions.length === 0 ? [undefined] : [...dimensions];
-  const suffix = dims.map((d) => (d !== undefined ? `[${d}]` : "[]")).join("");
-  return `${baseType}${suffix}` as any;
-}
-
-export type BasePostgresType = (typeof BASE_POSTGRES_TYPES)[number] | "xmin";
-
-export type BasePostgresVariadicTypes = ReturnType<
-  (typeof BASE_POSTGRES_VARIADIC_TYPES)[keyof typeof BASE_POSTGRES_VARIADIC_TYPES]
->;
-
-export type BasePostgresVariadicTypeNames =
-  BasePostgresVariadicTypes extends `${infer Name}(${string}` ? Name : never;
-
-export type PostgresType =
-  | BasePostgresType
-  | BasePostgresVariadicTypes
-  // Intentionally support only single dimension
-  | `${BasePostgresType}[]`
-  | `${BasePostgresVariadicTypes}[]`;
-
-// Following would work for many dimensions and sizes, but it is probably too
-// clever?
-//
-// type ArrayPostgresType<
-//   T extends string,
-//   Depth extends 0[] = [],
-// > = Depth["length"] extends 4
-//   ? T
-//   : T extends any
-//     ?
-//         | T
-//         | `${T}[]`
-//         | `${T}[${number}]`
-//         | ArrayPostgresType<`${T}[]`, [...Depth, 0]>
-//         | ArrayPostgresType<`${T}[${number}]`, [...Depth, 0]>
-//     : never;
-
-// export type PostgresType = ArrayPostgresType<
-//   BasePostgresType | BasePostgresVariadicTypes
-// >;
-
-export type PostgresTypeBuilder<T> = Omit<
-  {
-    [k in BasePostgresType]: () => T;
-  },
-  BasePostgresVariadicTypeNames
-> & {
-  [k in keyof typeof BASE_POSTGRES_VARIADIC_TYPES]: (
-    ...params: Parameters<(typeof BASE_POSTGRES_VARIADIC_TYPES)[k]>
-  ) => T;
+export type InputOutput<I, O = I> = {
+  input: I;
+  output: O;
 };
 
-/*
- & {
-  array: (baseType: T) => V;
+// Map from string literal names to actual TypeScript types
+type TypeLiteralMap = {
+  string: string;
+  number: number;
+  bigint: bigint;
+  boolean: boolean;
+  dateObject: Date;
+  uint8Array: Uint8Array;
+  object: Record<string, any>;
 };
-*/
+
+// Expands a const tuple like readonly ["string", "number", "bigint"] to string | number | bigint,
+// or a single literal like "number" to the actual number type
+type ExpandLiteral<T> = T extends readonly unknown[]
+  ? TypeLiteralMap[T[number] & keyof TypeLiteralMap]
+  : TypeLiteralMap[T & keyof TypeLiteralMap];
+
+// Infer the full type mapping from the PGUNIFIED_TYPE_MAPPING const
+export type PgUnifiedMapping = {
+  [K in keyof typeof PGUNIFIED_TYPE_MAPPING]: InputOutput<
+    ExpandLiteral<ReturnType<(typeof PGUNIFIED_TYPE_MAPPING)[K]>["input"]>,
+    ExpandLiteral<ReturnType<(typeof PGUNIFIED_TYPE_MAPPING)[K]>["output"]>
+  >;
+};
