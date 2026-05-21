@@ -6,7 +6,7 @@ import postgres from "postgres";
 import { afterEach, beforeAll, beforeEach, describe, it } from "vitest";
 import { startContainer } from "./test-container.ts";
 import { runMappingTest } from "./test-helper.ts";
-import { TABLE } from "./test-table.ts";
+import { getTestTable } from "./test-table.ts";
 
 /**
  * Sloppy monkey patch for this https://github.com/porsager/postgres/issues/471
@@ -93,11 +93,8 @@ describe("npm:postgres unified type mapping", () => {
   }, 30000);
 
   it("npm:pg insert and select all types round-trip correctly", async () => {
-    const filteredTable = Object.fromEntries(
-      Object.entries(TABLE).filter(([, v]) => !(v as any).skipPorsager),
-    );
     await runMappingTest({
-      table: filteredTable,
+      table: getTestTable({ skipPorsager: true }),
       mapping: PGUNIFIED_TYPE_MAPPING,
       exec: async (statement) => {
         await sql.unsafe(statement).execute();

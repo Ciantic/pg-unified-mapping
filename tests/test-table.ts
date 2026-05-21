@@ -1,5 +1,7 @@
+// Test table for unified mapping
+
 // prettier-ignore
-export const TABLE = {
+const TABLE = {
   // Numeric types
   test_int2_n: { type: "int2", input: 100 },
   test_int2_b: { type: "int2", input: 100n, output: 100 },
@@ -119,7 +121,44 @@ export const TABLE = {
   // - pglite has bug, can't handle nulls in array: https://github.com/electric-sql/pglite/issues/997
   // - porsager has feature, can't handle undefined input for non-nullable columns
   test_null: { type: "int4", input: null, output: null },
-  test_arr_null: { type: "text[]", input: [null, "hello", null], output: [null, "hello", null], skipPgLite: true, skipPorsager: true },
-  test2_null: { type: "text", input: undefined, output: null, skipPorsager: true },
-  test2_arr_null: { type: "text[]", input: [undefined, "hello", undefined], output: [null, "hello", null], skipPorsager: true, skipPgLite: true },
-} satisfies Record<string, { type: string; input: any; output?: any, skipPorsager?: boolean, skipPgLite?: boolean }>;
+  test_arr_null: { 
+    type: "text[]", input: [null, "hello", null], output: [null, "hello", null], 
+    skipPgLite: "https://github.com/electric-sql/pglite/issues/997", 
+    skipPorsager: "it just fails, didn't figure out yet why" 
+  },
+  test2_null: { 
+    type: "text", input: undefined, output: null, 
+    skipPorsager: "documented behavior of porsager/postgres" 
+  },
+  test2_arr_null: { 
+    type: "text[]", input: [undefined, "hello", undefined], output: [null, "hello", null], 
+    skipPorsager: "it just fails, didn't figure out yet why", 
+    skipPgLite: "https://github.com/electric-sql/pglite/issues/997" 
+  },
+} satisfies Record<string, { type: string; input: any; output?: any, skipPorsager?: string, skipPgLite?: string, skipPg?: string }>;
+
+export function getTestTable(
+  opts: {
+    skipPorsager?: boolean;
+    skipPgLite?: boolean;
+    skipPg?: boolean;
+    skipPostgreJS?: boolean;
+  } = {},
+): Record<
+  string,
+  {
+    type: string;
+    input: any;
+    output?: any;
+  }
+> {
+  return Object.fromEntries(
+    Object.entries(TABLE).filter(([, v]) => {
+      if (opts.skipPg && (v as any).skipPg) return false;
+      if (opts.skipPorsager && (v as any).skipPorsager) return false;
+      if (opts.skipPgLite && (v as any).skipPgLite) return false;
+      if (opts.skipPostgreJS && (v as any).skipPostgreJS) return false;
+      return true;
+    }),
+  );
+}

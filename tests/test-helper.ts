@@ -1,5 +1,6 @@
 import type { PGUNIFIED_TYPE_MAPPING } from "pg-unified-mapping";
 import { expect } from "vitest";
+import type { getTestTable } from "./test-table.ts";
 
 export type TestTable = Record<
   string,
@@ -61,7 +62,7 @@ function primitiveValidation(type: MapperRec, value: any): boolean {
 }
 
 interface Opts {
-  table: TestTable;
+  table: ReturnType<typeof getTestTable>;
   mapping: typeof PGUNIFIED_TYPE_MAPPING;
   exec(sql: string): Promise<void>;
   query(sql: string, params?: any[]): Promise<{ rows: Record<string, any>[] }>;

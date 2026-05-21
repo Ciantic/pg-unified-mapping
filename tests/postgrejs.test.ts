@@ -10,7 +10,7 @@ import {
 import { afterEach, beforeAll, beforeEach, describe, it } from "vitest";
 import { startContainer } from "./test-container.ts";
 import { runMappingTest } from "./test-helper.ts";
-import { TABLE } from "./test-table.ts";
+import { getTestTable } from "./test-table.ts";
 
 // This mapping is very sloppy, we need to clean this up at somepoint!
 
@@ -317,7 +317,7 @@ describe("npm:postgrejs unified type mapping", () => {
     }
 
     await runMappingTest({
-      table: TABLE,
+      table: getTestTable({ skipPostgreJS: true }),
       mapping: PGUNIFIED_TYPE_MAPPING,
       exec: async (sql) => {
         await conn.query(sql);

@@ -1,12 +1,12 @@
 import pg from "pg";
 import {
-  PGUNIFIED_TYPE_MAPPING,
   createPgMapperTypes,
+  PGUNIFIED_TYPE_MAPPING,
 } from "pg-unified-mapping";
 import { afterEach, beforeAll, beforeEach, describe, it } from "vitest";
 import { startContainer } from "./test-container.ts";
 import { runMappingTest } from "./test-helper.ts";
-import { TABLE } from "./test-table.ts";
+import { getTestTable } from "./test-table.ts";
 
 beforeAll(async () => {
   await startContainer();
@@ -45,7 +45,7 @@ describe("npm:pg unified type mapping", () => {
 
   it("npm:pg insert and select all types round-trip correctly", async () => {
     await runMappingTest({
-      table: TABLE,
+      table: getTestTable({ skipPg: true }),
       mapping: PGUNIFIED_TYPE_MAPPING,
       exec: async (sql) => {
         await client.query(sql);
