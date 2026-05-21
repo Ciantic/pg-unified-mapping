@@ -50,6 +50,10 @@ postgres({
 
 postgres parser has difficulty with arrays, I've made a monkey patch `monkeyPatchArrayInference` but it would best if it was fixed in the library itself, see [the bug](https://github.com/porsager/postgres/issues/471).
 
+### npm:postgrejs
+
+Forget it for now! I have it as a test case, but mapping is so difficult that what ever for now.
+
 ## Known quirks
 
 
