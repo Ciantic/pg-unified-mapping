@@ -10,7 +10,7 @@ Currently supported clients:
 
 ## Recommendation
 
-Use to `pg` and `pglite`, mapping is easiest with those and has least quirks.
+Use `pg` and `pglite` if you can, mapping is easiest with those and has least quirks.
 
 ## Usage
 

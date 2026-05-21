@@ -180,7 +180,7 @@ describe("generate README.md doc", () => {
 
         ## Recommendation
 
-        Use to \`pg\` and \`pglite\`, mapping is easiest with those and has least quirks.
+        Use \`pg\` and \`pglite\` if you can, mapping is easiest with those and has least quirks.
 
         ## Usage
 
@@ -223,7 +223,7 @@ describe("generate README.md doc", () => {
         ## Known quirks
 
         ${quirksHtml}
-        
+
         ## Type mapping
 
         ${typeInfoTableHtml}
