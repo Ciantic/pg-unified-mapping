@@ -120,22 +120,51 @@ const TABLE = {
   test_decimal_variadic: { type: "decimal(10, 2)", input: "12345.67" },
 
   // Array examples
+  test_int2_arr: { type: "int2[]", input: [1, 2, 3] },
   test_int4_arr: { type: "int4[]", input: [1, 2, 3] },
   test_int8_arr: { type: "int8[]", input: [1n, 2n, 3n], 
     skipPorsager: "[see array inference bug](https://github.com/porsager/postgres/issues/471)",
   },
+  test_float4_arr: { type: "float4[]", input: [1, 2, 3] },
+  test_float8_arr: { type: "float8[]", input: [1.123, 2.223, 3.3232] },
+  test_decimal_arr: { type: "decimal(10,2)[]", input: ["10.55", "20.75"] },
+
+  test_money_arr: { type: "money[]", input: ["$12.34", "$56.78"], skipDuckDB: "no support" },
+
   test_text_arr: { type: "text[]", input: ["hello", "world"] },
-  test_float8_arr: { type: "float8[]", input: [1.1, 2.2, 3.3] },
-  test_bool_arr: { type: "boolean[]", input: [true, false, true], 
-    skipPorsager: "[see array inference bug](https://github.com/porsager/postgres/issues/471)",
+
+  test_bytea_arr: { type: "bytea[]", input: [Uint8Array.from([0xde, 0xad]), Uint8Array.from([0xbe, 0xef])], 
+    skipPorsager: "[see array inference bug](https://github.com/porsager/postgres/issues/471)", 
   },
+
   test_timestamp_arr: { type: "timestamp[]", input: ["2024-06-15 00:00:00", "2024-06-16 00:00:00"] },
   test_timestamptz_arr: { type: "timestamptz[]", input: [new Date("2024-06-15T12:34:56Z"), new Date("2024-06-16T12:34:56Z")], 
     skipPorsager: "[see array inference bug](https://github.com/porsager/postgres/issues/471)",
   },
-  test_decimal_arr: { type: "decimal(10,2)[]", input: ["10.55", "20.75"] },
+  test_date_arr: { type: "date[]", input: ["2024-06-15", "2024-06-16"] },
+  test_time_arr: { type: "time[]", input: ["12:34:56", "23:45:01"] },
+  test_timetz_arr: { type: "timetz[]", input: ["12:34:56+00", "23:45:01+00"] },
+  test_interval_arr: { type: "interval[]", input: ["1 year", "2 mons"] },
+
+  test_boolean_arr: { type: "boolean[]", input: [true, false, true], skipPorsager: "[see array inference bug](https://github.com/porsager/postgres/issues/471)", },
+
+  test_uuid_arr: { type: "uuid[]", input: ["a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"] },
+
+  test_jsonb_arr: { type: "jsonb[]", input: [{ key: "value1" }, { key: "value2" }], skipDuckDB: "no support" },
+  test_json_arr: { type: "json[]", input: [{ arr: [1, 2] }, { arr: [3, 4] }], skipDuckDB: "no support (?)" },
+
+
   test_point_arr: { type: "point[]", input: ["(1,2)", "(3,4)"], skipDuckDB: "no support" },
   test_circle_arr: { type: "circle[]", input: ["<(1,2),3>", "<(4,5),6>"], skipDuckDB: "no support" },
+
+  test_pg_lsn_arr: { type: "pg_lsn[]", input: ["0/16A8F80", "0/16A8F81"], skipDuckDB: "no support" },
+  test_pg_snapshot_arr: { type: "pg_snapshot[]", input: ["100:200:", "300:400:"], skipDuckDB: "no support" },
+
+  test_bit_arr: { type: "bit(3)[]", input: ["101", "110"], skipDuckDB: "no support" },
+  test_varbit_arr: { type: "varbit(16)[]", input: ["10011010", "11110000"], skipDuckDB: "no support" },
+  test_char_arr: { type: "char(5)[]", input: ["a".repeat(5), "b".repeat(5)] },
+  test_varchar_arr: { type: "varchar(255)[]", input: ["hello", "world"] },
+  test_decimal_variadic_arr: { type: "decimal(10,2)[]", input: ["12345.67", "89012.34"] },
 
   // Nullness
   // - pglite has bug, can't handle nulls in array: https://github.com/electric-sql/pglite/issues/997

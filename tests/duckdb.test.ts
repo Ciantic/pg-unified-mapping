@@ -72,9 +72,10 @@ const pgConverter: DuckDBValueConverter<JS> = (
     case DuckDBTypeId.TIME_TZ:
       return (value as DuckDBTimeTZValue).toString();
     case DuckDBTypeId.INTERVAL:
+      console.log("Converting interval value:", value.toString());
       return (value as DuckDBIntervalValue)
         .toString()
-        .replace(/ months /g, " mons ");
+        .replace("months", "mons");
     case DuckDBTypeId.DECIMAL:
       return (value as DuckDBDecimalValue)
         .toString()
@@ -82,6 +83,11 @@ const pgConverter: DuckDBValueConverter<JS> = (
         .replace(/\.$/, "");
     case DuckDBTypeId.BLOB:
       return new Uint8Array((value as DuckDBBlobValue).bytes);
+    case DuckDBTypeId.LIST:
+      const newItems = (value as DuckDBListValue).items.map((item, idx) =>
+        pgConverter(item, type.valueType, converter),
+      );
+      return newItems as any;
     default:
       return JSDuckDBValueConverter(value, type, converter);
   }

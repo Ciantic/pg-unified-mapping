@@ -27,6 +27,8 @@ export function createPgMapperTypes(pg: {
 }) {
   return {
     getTypeParser: (oid: number, format?: "binary" | "text") => {
+      // https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.dat
+
       // int8/serial8: return bigint instead of number | bigint
       if (oid === 20) return (val: string) => BigInt(val);
       // int8[]: parse as bigint array
@@ -42,6 +44,13 @@ export function createPgMapperTypes(pg: {
       if (oid === 718) return (val: string) => val;
       // date: return string instead of Date
       if (oid === 1082) return (val: string) => val;
+      // date[]: parse as string array
+      if (oid === 1182)
+        return (val: string) =>
+          pg.types.arrayParser
+            .create(val)
+            .parse()
+            .map((v: string) => v);
       // timestamp: return string instead of Date
       if (oid === 1114) return (val: string) => val;
       // timestamp[]: parse as string array
@@ -53,10 +62,23 @@ export function createPgMapperTypes(pg: {
             .map((v: string) => v);
       // interval: return string instead of {years, months, days}
       if (oid === 1186) return (val: string) => val;
+      // interval[]: parse as string array
+      if (oid === 1187)
+        return (val: string) =>
+          pg.types.arrayParser
+            .create(val)
+            .parse()
+            .map((v: string) => v);
       // bytea: wrap default parser to return Uint8Array
       if (oid === 17) {
         const byteaParser = pg.types.getTypeParser(oid, format);
         return (val: string) => new Uint8Array(byteaParser(val));
+      }
+      // bytea: array
+      if (oid === 1001) {
+        const byteaArrayParser = pg.types.getTypeParser(oid, format);
+        return (val: string) =>
+          byteaArrayParser(val).map((v: any) => new Uint8Array(v));
       }
       // numeric/decimal: return string
       if (oid === 1700) return (val: string) => val;
@@ -68,6 +90,19 @@ export function createPgMapperTypes(pg: {
         return (val: string) => pg.types.arrayParser.create(val).parse();
       // circle[]: parse as string array
       if (oid === 719)
+        return (val: string) => pg.types.arrayParser.create(val).parse();
+
+      // pg_lsn[]: parse as string array
+      if (oid === 3221)
+        return (val: string) => pg.types.arrayParser.create(val).parse();
+      // pg_snapshot[]: parse as string array
+      if (oid === 5039)
+        return (val: string) => pg.types.arrayParser.create(val).parse();
+      // bit[]: parse as string array
+      if (oid === 1561)
+        return (val: string) => pg.types.arrayParser.create(val).parse();
+      // varbit[]: parse as string array
+      if (oid === 1563)
         return (val: string) => pg.types.arrayParser.create(val).parse();
 
       // For other types, use default parsers
