@@ -55,6 +55,11 @@ export function createPgMapperTypes(pg: {
           byteaArrayParser(val).map((v: any) => new Uint8Array(v));
       }
 
+      // line: return as string
+      if (oid === 628) return stringParser;
+      // line[]: parse as string array
+      if (oid === 629) return arrayStringParser;
+
       // point: return string instead of {x, y}
       if (oid === 600) return stringParser;
       // point[]: parse as string array
@@ -85,6 +90,36 @@ export function createPgMapperTypes(pg: {
       // numeric[]: parse as string array
       if (oid === 1231) return arrayStringParser;
 
+      // lseg: return string instead of {x1, y1, x2, y2}
+      if (oid === 601) return stringParser;
+      // lseg[]: parse as string array
+      if (oid === 1018) return arrayStringParser;
+
+      // path: return string
+      if (oid === 602) return stringParser;
+      // path[]: parse as string array
+      if (oid === 1019) return arrayStringParser;
+
+      // macaddr8: return string
+      if (oid === 774) return stringParser;
+      // macaddr8[]: parse as string array
+      if (oid === 775) return arrayStringParser;
+
+      // tsvector: return string
+      if (oid === 3614) return stringParser;
+      // tsvector[]: parse as string array
+      if (oid === 3643) return arrayStringParser;
+
+      // tsquery: return string
+      if (oid === 3615) return stringParser;
+      // tsquery[]: parse as string array
+      if (oid === 3645) return arrayStringParser;
+
+      // polygon
+      if (oid === 604) return stringParser;
+      // polygon[]: parse as string array
+      if (oid === 1027) return arrayStringParser;
+
       // pg_lsn[]: parse as string array
       if (oid === 3221) return arrayStringParser;
 
@@ -96,6 +131,9 @@ export function createPgMapperTypes(pg: {
 
       // varbit[]: parse as string array
       if (oid === 1563) return arrayStringParser;
+
+      // xml2[]: parse as string array
+      if (oid === 143) return arrayStringParser;
 
       // For other types, use default parsers
       return pg.types.getTypeParser(oid, format);
