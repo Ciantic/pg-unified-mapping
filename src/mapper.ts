@@ -38,10 +38,19 @@ export function createPgMapperTypes(pg: {
             .create(val)
             .parse()
             .map((v: string) => BigInt(v));
+
       // point: return string instead of {x, y}
       if (oid === 600) return (val: string) => val;
+      // point[]: parse as string array
+      if (oid === 1017)
+        return (val: string) => pg.types.arrayParser.create(val).parse();
+
       // circle: return string instead of {x, y, radius}
       if (oid === 718) return (val: string) => val;
+      // circle[]: parse as string array
+      if (oid === 719)
+        return (val: string) => pg.types.arrayParser.create(val).parse();
+
       // date: return string instead of Date
       if (oid === 1082) return (val: string) => val;
       // date[]: parse as string array
@@ -51,25 +60,20 @@ export function createPgMapperTypes(pg: {
             .create(val)
             .parse()
             .map((v: string) => v);
+
       // timestamp: return string instead of Date
       if (oid === 1114) return (val: string) => val;
       // timestamp[]: parse as string array
       if (oid === 1115)
-        return (val: string) =>
-          pg.types.arrayParser
-            .create(val)
-            .parse()
-            .map((v: string) => v);
+        return (val: string) => pg.types.arrayParser.create(val).parse();
+
       // interval: return string instead of {years, months, days}
       if (oid === 1186) return (val: string) => val;
       // interval[]: parse as string array
       if (oid === 1187)
-        return (val: string) =>
-          pg.types.arrayParser
-            .create(val)
-            .parse()
-            .map((v: string) => v);
-      // bytea: wrap default parser to return Uint8Array
+        return (val: string) => pg.types.arrayParser.create(val).parse();
+
+      // bytea: return Uint8Array instead of Buffer
       if (oid === 17) {
         const byteaParser = pg.types.getTypeParser(oid, format);
         return (val: string) => new Uint8Array(byteaParser(val));
@@ -80,27 +84,25 @@ export function createPgMapperTypes(pg: {
         return (val: string) =>
           byteaArrayParser(val).map((v: any) => new Uint8Array(v));
       }
+
       // numeric/decimal: return string
       if (oid === 1700) return (val: string) => val;
       // numeric[]: parse as string array
       if (oid === 1231)
         return (val: string) => pg.types.arrayParser.create(val).parse();
-      // point[]: parse as string array
-      if (oid === 1017)
-        return (val: string) => pg.types.arrayParser.create(val).parse();
-      // circle[]: parse as string array
-      if (oid === 719)
-        return (val: string) => pg.types.arrayParser.create(val).parse();
 
       // pg_lsn[]: parse as string array
       if (oid === 3221)
         return (val: string) => pg.types.arrayParser.create(val).parse();
+
       // pg_snapshot[]: parse as string array
       if (oid === 5039)
         return (val: string) => pg.types.arrayParser.create(val).parse();
+
       // bit[]: parse as string array
       if (oid === 1561)
         return (val: string) => pg.types.arrayParser.create(val).parse();
+
       // varbit[]: parse as string array
       if (oid === 1563)
         return (val: string) => pg.types.arrayParser.create(val).parse();
