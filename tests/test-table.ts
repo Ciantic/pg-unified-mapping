@@ -154,7 +154,7 @@ const TABLE = {
   test_lseg_arr: { type: "lseg[]", input: ["[(1,2),(3,4)]", "[(5,6),(7,8)]"], skipDuckDB: "no support" },
   
   test_box: { type: "box", input: "(3,4),(1,2)", skipDuckDB: "no support" },
-  test_box_arr: { type: "box[]", input: ["(3,4),(1,2)", "(7,8),(5,6)"], skipDuckDB: "no support", skipPg: "what?" },
+  test_box_arr: { type: "box[]", input: ["(3,4),(1,2)", "(7,8),(5,6)"], skipDuckDB: "no support", skipPg: "pg has probably bug in prepareValue, it can't format the INSERT correctly" },
   
   test_path: { type: "path", input: "[(1,2),(3,4),(5,6)]", skipDuckDB: "no support" },
   test_path_arr: { type: "path[]", input: ["[(1,2),(3,4),(5,6)]", "[(7,8),(9,10),(11,12)]"], skipDuckDB: "no support" },

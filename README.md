@@ -63,7 +63,7 @@ DuckDB is not Postgres, but it supports most of PG dialect and types. I made als
 ## Known quirks
 
 
-* npm:pg &mdash; type <code>box[]</code> fails with input <code>["(3,4),(1,2)", "(7,8),(5,6)"]</code> what?
+* npm:pg &mdash; type <code>box[]</code> fails with input <code>["(3,4),(1,2)", "(7,8),(5,6)"]</code> pg has probably bug in prepareValue, it can't format the INSERT correctly
 * npm:postgres &mdash; type <code>boolean[]</code> fails with input <code>[true, false, true]</code> [see array inference bug](https://github.com/porsager/postgres/issues/471)
 * npm:postgres &mdash; type <code>bytea[]</code> fails with input <code>[Uint8Array([222, 173]), Uint8Array([190, 239])]</code> [see array inference bug](https://github.com/porsager/postgres/issues/471)
 * npm:postgres &mdash; type <code>int8[]</code> fails with input <code>[1n, 2n, 3n]</code> [see array inference bug](https://github.com/porsager/postgres/issues/471)
