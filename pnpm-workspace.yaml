@@ -1,2 +1,3 @@
 minimumReleaseAgeExclude:
   - "@types/node@25.9.0"
+  - '@electric-sql/pglite@0.4.6'

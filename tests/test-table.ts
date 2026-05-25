@@ -185,7 +185,6 @@ const TABLE = {
   test_null: { type: "int4", input: null, output: null },
   test_arr_null: { 
     type: "text[]", input: [null, "hello", null], output: [null, "hello", null], 
-    skipPgLite: "[see reported bug](https://github.com/electric-sql/pglite/issues/997)", 
     skipPorsager: "it just fails, didn't figure out yet why",
     skipDuckDB: "no support for null elements in arrays",
   },
@@ -196,7 +195,6 @@ const TABLE = {
   test2_arr_null: { 
     type: "text[]", input: [undefined, "hello", undefined], output: [null, "hello", null], 
     skipPorsager: "it just fails, didn't figure out yet why", 
-    skipPgLite: "[see reported bug](https://github.com/electric-sql/pglite/issues/997)",
     skipDuckDB: "no support for null elements in arrays",
   },
 } satisfies TestTable;

@@ -63,8 +63,6 @@ DuckDB is not Postgres, but it supports most of PG dialect and types. I made als
 ## Known quirks
 
 
-* npm:@electric-sql/pglite &mdash; type <code>text[]</code> fails with input <code>[null, "hello", null]</code> [see reported bug](https://github.com/electric-sql/pglite/issues/997)
-* npm:@electric-sql/pglite &mdash; type <code>text[]</code> fails with input <code>[undefined, "hello", undefined]</code> [see reported bug](https://github.com/electric-sql/pglite/issues/997)
 * npm:pg &mdash; type <code>box[]</code> fails with input <code>["(3,4),(1,2)", "(7,8),(5,6)"]</code> what?
 * npm:postgres &mdash; type <code>boolean[]</code> fails with input <code>[true, false, true]</code> [see array inference bug](https://github.com/porsager/postgres/issues/471)
 * npm:postgres &mdash; type <code>bytea[]</code> fails with input <code>[Uint8Array([222, 173]), Uint8Array([190, 239])]</code> [see array inference bug](https://github.com/porsager/postgres/issues/471)
