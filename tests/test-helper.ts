@@ -165,14 +165,17 @@ export async function runMappingTest(opts: Opts) {
       let inputValidator: MapperRec = types.input;
       let outputValidator: MapperRec = types.output ?? types.input;
 
-      expect(
-        primitiveValidation(inputValidator, input),
-        `Input validation failed for column "${columnName}"`,
-      ).toBe(true);
-      expect(
-        primitiveValidation(outputValidator ?? inputValidator, output),
-        `Output validation failed for column "${columnName}"`,
-      ).toBe(true);
+      if (!primitiveValidation(inputValidator, input)) {
+        expect.fail(
+          `Input validation failed for column "${columnName}" given validator '${inputValidator}' does not match with value: ${JSON.stringify(input)}`,
+        );
+      }
+
+      if (!primitiveValidation(outputValidator, output)) {
+        expect.fail(
+          `Output validation failed for column "${columnName}" given validator '${outputValidator}' does not match with value: ${JSON.stringify(output)}`,
+        );
+      }
     },
   );
 }
