@@ -22,6 +22,7 @@ const TABLE = {
   test_int2_s: { type: "int2", input: "100", output: 100 },
   test_int2_arr: { type: "int2[]", input: [1, 2, 3] },
   test_int2_arr2: { type: "int2[][]", input: [[1, 2, 3], [4, 5, 6]] },
+  test_int2_arr33: { type: "int2[3][3]", input: [[1, 2, 3], [4, 5, 6]], skipDuckDB: "no support" },
   
   test_int4_n: { type: "int4", input: 200000 },
   test_int4_b: { type: "int4", input: 200000n, output: 200000 },

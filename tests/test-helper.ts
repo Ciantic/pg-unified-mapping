@@ -120,7 +120,7 @@ export async function runMappingTest(opts: Opts) {
 
       const key = type as keyof typeof opts.mapping;
       let mapping = opts.mapping[key] as Mapper;
-      const isArrayType = type.endsWith("[]");
+      const isArrayType = type.includes("[");
       const baseTypeMatch = type.match(/^(\w+)/)?.[1];
       const decimalMatch = type.match(/^decimal\((\d+),\s*(\d+)\)/);
       const varcharMatch = type.match(/^varchar\((\d+)\)/);
@@ -153,7 +153,7 @@ export async function runMappingTest(opts: Opts) {
         throw new Error(`No mapping found for type "${type}"`);
       }
       if (isArrayType) {
-        const dimension = type.split("[]").length - 1;
+        const dimension = type.split(/\[\d*\]/).length - 1;
         const innerMapping = mapping();
 
         mapping = () => {
