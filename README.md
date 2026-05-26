@@ -386,6 +386,12 @@ To create more test cases, edit [tests/test-table.ts](tests/test-table.ts).
 </tr>
 
 <tr>
+<td><code>int2[][]</code> </td>
+<td><code>[[1, 2, 3], [4, 5, 6]]</code></td>
+<td><code>[[1, 2, 3], [4, 5, 6]]</code></td>
+</tr>
+
+<tr>
 <td><code>int4</code> </td>
 <td><code>200000</code></td>
 <td><code>200000</code></td>

@@ -153,11 +153,21 @@ export async function runMappingTest(opts: Opts) {
         throw new Error(`No mapping found for type "${type}"`);
       }
       if (isArrayType) {
+        const dimension = type.split("[]").length - 1;
         const innerMapping = mapping();
-        mapping = () => ({
-          input: ["array", innerMapping.input],
-          output: ["array", innerMapping.output ?? innerMapping.input],
-        });
+
+        mapping = () => {
+          let inputMapping: any = innerMapping.input;
+          let outputMapping: any = innerMapping.output ?? innerMapping.input;
+          for (let i = 0; i < dimension; i++) {
+            inputMapping = ["array", inputMapping];
+            outputMapping = ["array", outputMapping];
+          }
+          return {
+            input: inputMapping,
+            output: outputMapping,
+          };
+        };
       }
 
       let types = mapping();
