@@ -17,7 +17,7 @@ function io(input: unknown, output?: unknown) {
   return { input, output: output ?? input };
 }
 
-const numeric = ["string", "number", "bigint"] as const;
+const numeric = ["string", "number", "bigint"] as const satisfies string[];
 
 export const PGUNIFIED_TYPE_MAPPING = {
   // Numeric types, alias follows in comments
@@ -88,7 +88,7 @@ export const PGUNIFIED_TYPE_MAPPING = {
   xmin: () => io("number"),
   pg_lsn: () => io("string"),
   pg_snapshot: () => io("string"),
-} as const;
+};
 
 /**
  * Type that represents the input and output types for a given PostgreSQL type mapping.
@@ -101,8 +101,82 @@ export type InputOutput<I, O = I> = {
   output: O;
 };
 
+// Full type mapping manually typed for easier copy-pasting, this would not be
+// required as it is inferred below, but I don't intend this library to be for
+// copy-pasting.
+export type PgUnifiedTypeMapping = {
+  // Numeric types
+  int2: InputOutput<string | number | bigint, number>;
+  int4: InputOutput<string | number | bigint, number>;
+  int8: InputOutput<string | number | bigint, bigint>;
+  serial2: InputOutput<string | number | bigint, number>;
+  serial4: InputOutput<string | number | bigint, number>;
+  serial8: InputOutput<string | number | bigint, bigint>;
+  float4: InputOutput<string | number | bigint, number>;
+  float8: InputOutput<string | number | bigint, number>;
+  decimal: InputOutput<string | number | bigint, string>;
+  money: InputOutput<string, string>;
+
+  // Character types
+  text: InputOutput<string>;
+  varchar: InputOutput<string>;
+  char: InputOutput<string>;
+
+  // Binary types
+  bytea: InputOutput<Uint8Array>;
+
+  // Date/Time types
+  timestamp: InputOutput<string>;
+  timestamptz: InputOutput<Date>;
+  date: InputOutput<string>;
+  time: InputOutput<string>;
+  timetz: InputOutput<string>;
+  interval: InputOutput<string>;
+
+  // Boolean type
+  boolean: InputOutput<boolean>;
+
+  // UUID type
+  uuid: InputOutput<string>;
+
+  // JSON types
+  jsonb: InputOutput<Record<string, any>>;
+  json: InputOutput<Record<string, any>>;
+
+  // Network address types
+  inet: InputOutput<string>;
+  cidr: InputOutput<string>;
+  macaddr: InputOutput<string>;
+  macaddr8: InputOutput<string>;
+
+  // Bit string types
+  bit: InputOutput<string>;
+  varbit: InputOutput<string>;
+
+  // Text search types
+  tsvector: InputOutput<string>;
+  tsquery: InputOutput<string>;
+
+  // XML type
+  xml: InputOutput<string>;
+
+  // Geometric types
+  point: InputOutput<string>;
+  line: InputOutput<string>;
+  lseg: InputOutput<string>;
+  box: InputOutput<string>;
+  path: InputOutput<string>;
+  polygon: InputOutput<string>;
+  circle: InputOutput<string>;
+
+  // Object identifier / system types
+  xmin: InputOutput<number>;
+  pg_lsn: InputOutput<string>;
+  pg_snapshot: InputOutput<string>;
+};
+
 // Map from string literal names to actual TypeScript types
-type TypeLiteralMap = {
+export type TypeLiteralMap = {
   string: string;
   number: number;
   bigint: bigint;
@@ -112,7 +186,7 @@ type TypeLiteralMap = {
   object: Record<string, any>;
 };
 
-type KnownType =
+export type KnownType =
   | keyof TypeLiteralMap
   | readonly (keyof TypeLiteralMap)[]
   | ["array", KnownType];
@@ -124,9 +198,21 @@ type ExpandLiteral<T> = T extends readonly unknown[]
   : TypeLiteralMap[T & keyof TypeLiteralMap];
 
 // Infer the full type mapping from the PGUNIFIED_TYPE_MAPPING const
-export type PgUnifiedMapping = {
+type PgUnifiedMappingInferred = {
   [K in keyof typeof PGUNIFIED_TYPE_MAPPING]: InputOutput<
     ExpandLiteral<ReturnType<(typeof PGUNIFIED_TYPE_MAPPING)[K]>["input"]>,
     ExpandLiteral<ReturnType<(typeof PGUNIFIED_TYPE_MAPPING)[K]>["output"]>
   >;
 };
+
+type Equal<T, U> =
+  (<G>() => G extends T ? 1 : 2) extends <G>() => G extends U ? 1 : 2
+    ? true
+    : false;
+
+type Assert<T extends true> = T;
+
+// Ensure that manual PgUnifiedTypeMapping matches the inferred PgUnifiedMappingInferred
+type _TestMapping = Assert<
+  Equal<PgUnifiedMappingInferred, PgUnifiedTypeMapping>
+>;

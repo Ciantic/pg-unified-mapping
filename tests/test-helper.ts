@@ -1,8 +1,8 @@
-import type { PGUNIFIED_TYPE_MAPPING } from "pg-unified-mapping";
+import type { KnownType, PGUNIFIED_TYPE_MAPPING } from "pg-unified-mapping";
 import { expect } from "vitest";
 import type { TestTable } from "./test-table.ts";
 
-type MapperRec = string | readonly string[] | ["array", MapperRec];
+type MapperRec = KnownType | "null" | "undefined" | "array";
 type Mapper = () => {
   readonly input: MapperRec;
   readonly output: MapperRec;
